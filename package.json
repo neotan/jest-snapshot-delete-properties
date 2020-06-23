@@ -1,6 +1,6 @@
 {
   "name": "jest-snapshot-delete-properties",
-  "version": "0.1",
+  "version": "0.0.1",
   "description": "Delete properties from generated snapshots",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
