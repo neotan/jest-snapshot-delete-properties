@@ -1,5 +1,5 @@
 node_modules
 *.log
-*-lock.json
+yarn.lock
 build
 .idea
