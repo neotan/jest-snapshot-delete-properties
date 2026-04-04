@@ -19,7 +19,8 @@ export default function deleteProperties(keys: string[]) {
       if (!hasProps(val)) return false;
       return Object.keys(val.props).some((prop) => keys.includes(prop));
     },
-    print(val: ReactLikeElement, serialize: (val: unknown) => string): string {
+    print(val: unknown, serialize: (val: unknown) => string): string {
+      if (!hasProps(val)) return serialize(val);
       const newProps = { ...val.props };
       for (const key of keys) {
         delete newProps[key];
