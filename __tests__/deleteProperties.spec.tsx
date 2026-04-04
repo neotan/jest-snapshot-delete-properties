@@ -35,7 +35,7 @@ describe('deleteProperties', () => {
         props: { 'data-testid': 'foo', 'data-remove': 'bar', id: 'keep' },
       };
       const serialize = (v: unknown) => JSON.stringify(v);
-      const result = serializer.print(val as any, serialize);
+      const result = serializer.print(val, serialize);
       const parsed = JSON.parse(result);
       expect(parsed.props).toEqual({ id: 'keep' });
       expect(parsed.props).not.toHaveProperty('data-testid');
@@ -48,7 +48,7 @@ describe('deleteProperties', () => {
         props: { 'data-testid': 'foo', id: 'keep' },
       };
       const serialize = (v: unknown) => JSON.stringify(v);
-      serializer.print(val as any, serialize);
+      serializer.print(val, serialize);
       expect(val.props).toHaveProperty('data-testid');
     });
   });
