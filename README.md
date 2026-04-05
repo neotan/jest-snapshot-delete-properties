@@ -1,43 +1,67 @@
-# Delete properties from snapshot
+# jest-snapshot-delete-properties
 
-Use this serializer to remove any unwanted properties from snapshot, keeping it sparkling clean :sparkles:
+Remove unwanted properties from Jest snapshots, keeping them clean and focused.
+
+[![npm version](https://img.shields.io/npm/v/jest-snapshot-delete-properties)](https://www.npmjs.com/package/jest-snapshot-delete-properties)
+[![license](https://img.shields.io/npm/l/jest-snapshot-delete-properties)](./LICENSE)
 
 ## Install
 
-Add the package as a dev dependency
-
 ```bash
-# With npm
 npm install --save-dev jest-snapshot-delete-properties
-
-# With yarn
-yarn add --dev jest-snapshot-delete-properties
 ```
 
-[Register serializer with Jest](jest-snapshot-delete-properties) in your `setupTests.js`:
+## Setup
 
-```js
-import snapshotDeleteProperties from "jest-snapshot-delete-properties";
+Register the serializer in your Jest setup file (e.g. `setupTests.ts`):
 
-expect.addSnapshotSerializer(snapshotDeleteProperties(["want-to-delete-attr1", "want-to-delete-attr2"]));
+```ts
+import deleteProperties from "jest-snapshot-delete-properties";
+
+expect.addSnapshotSerializer(
+  deleteProperties(["data-testid", "data-tracking"])
+);
 ```
 
-## Vanilla JS Example
+## Usage
 
-```js
-test('should remove data attributes', () => {
-  expect(<Component want-to-delete-attr1="bye" id="keep-me">Children</Component>).toMatchSnapshot();
+Any snapshot containing the specified properties will have them automatically removed:
+
+```tsx
+test("removes unwanted props from snapshot", () => {
+  expect(
+    <button data-testid="submit-btn" data-tracking="click" className="primary">
+      Submit
+    </button>
+  ).toMatchSnapshot();
 });
 ```
 
-Will output:
+Produces:
 
-```js
-exports[`should remove data attributes`] = `
-<div
-  id="keep-me"
+```
+exports[`removes unwanted props from snapshot`] = `
+<button
+  className="primary"
 >
-  Children
-</div>
+  Submit
+</button>
 `;
 ```
+
+## API
+
+### `deleteProperties(keys: string[])`
+
+Returns a Jest snapshot serializer that strips the specified property names from React element snapshots.
+
+- **keys** — array of property names to remove
+
+## Requirements
+
+- Node.js >= 18
+- Jest >= 29
+
+## License
+
+[MIT](./LICENSE)
