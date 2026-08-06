@@ -1,32 +1,63 @@
 name: Publish to NPM
+
 on:
   push:
     branches: [master]
   release:
     types: [published]
+  workflow_dispatch:
+
+# Serialize publish runs so two never race to publish the same version.
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
 
 permissions:
   contents: read
+  id-token: write # required for npm Trusted Publishing (OIDC) and provenance
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20.x'
+          node-version: '24' # npm >= 11.5.1 (bundled) is required for Trusted Publishing
           registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
+          # npm caching is intentionally left off: on a publishing job a poisoned
+          # cache could leak the short-lived OIDC credentials to third-party code.
+
+      - name: Determine whether this version needs publishing
+        id: check
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view "$NAME@$VERSION" version 2>/dev/null || true)
+          if [ "$PUBLISHED" = "$VERSION" ]; then
+            echo "$NAME@$VERSION is already published; nothing to do."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "$NAME@$VERSION is not published yet; will build, test, and publish."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install dependencies
+        if: steps.check.outputs.publish == 'true'
         run: npm ci
+
       - name: Build
+        if: steps.check.outputs.publish == 'true'
         run: npm run build
+
       - name: Test
+        if: steps.check.outputs.publish == 'true'
         run: npm test
-      - name: Publish package on NPM
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+      - name: Publish to npm
+        if: steps.check.outputs.publish == 'true'
+        run: npm publish --provenance --access public
