@@ -5,6 +5,13 @@ Remove unwanted properties from Jest snapshots, keeping them clean and focused.
 [![npm version](https://img.shields.io/npm/v/jest-snapshot-delete-properties)](https://www.npmjs.com/package/jest-snapshot-delete-properties)
 [![license](https://img.shields.io/npm/l/jest-snapshot-delete-properties)](./LICENSE)
 
+## Why
+
+Snapshots often capture noisy, non-deterministic, or test-only attributes such as
+`data-testid`, tracking hooks, or generated ids. These add churn to your snapshot
+diffs without describing real behavior. This serializer strips the properties you
+name so snapshots stay stable and readable.
+
 ## Install
 
 ```bash
@@ -25,7 +32,8 @@ expect.addSnapshotSerializer(
 
 ## Usage
 
-Any snapshot containing the specified properties will have them automatically removed:
+Any element in a snapshot that carries one of the named properties will have it
+removed automatically, at any nesting depth:
 
 ```tsx
 test("removes unwanted props from snapshot", () => {
@@ -53,9 +61,13 @@ exports[`removes unwanted props from snapshot`] = `
 
 ### `deleteProperties(keys: string[])`
 
-Returns a Jest snapshot serializer that strips the specified property names from React element snapshots.
+Returns a Jest snapshot serializer that strips the given property names from
+React-element nodes as they are serialized.
 
-- **keys** — array of property names to remove
+- `keys`: array of property names to remove.
+
+The original values are never mutated, and nodes without matching properties are
+left untouched. TypeScript type definitions are bundled with the package.
 
 ## Requirements
 
